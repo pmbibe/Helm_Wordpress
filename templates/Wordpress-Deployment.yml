@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-deployment
+  namespace: {{ .Values.Project.Name }}
+spec:
+  selector:
+    matchLabels:
+      web-app: {{ .Values.Project.Name }}
+    replicas: {{ .Values.Replicas }}
+    template:
+      metadata:
+        labels:
+          web-app: {{ .Values.Project.Name }}
+        spec:
+          volumes:
+            - name: config-nginx
+              configMap:
+                name: {{ .Release.Name }}-config
+                items:
+                - key: nginx
+                  path: wordpress-server-block.conf
+          containers:
+          - name: {{ .Values.Project.Name }}
+            image: bitnami/wordpress-nginx:{{ .Values.Container.Version }}
+            ports:
+              - containers: {{ .Values.Port }}
+            volumeMounts:
+              - name: config-nginx
+                mountPath: /opt/bitnami/nginx/conf/server_blocks/wordpress-server-block.conf
+            env:
+            - name: MARIADB_HOST
+              value: {{ .Values.Container.Environment.MARIADB_HOST }}
+            - name: MARIADB_PORT_NUMBER
+              value: {{ .Values.Container.Environment.MARIADB_PORT_NUMBER }}              
+            - name: WORDPRESS_DATABASE_NAME
+              value: {{ .Values.Container.Environment.WORDPRESS_DATABASE_NAME }}
+            - name: WORDPRESS_DATABASE_USER
+              value: {{ .Values.Container.Environment.WORDPRESS_DATABASE_USER }}
+            - name: WORDPRESS_DATABASE_PASSWORD
+              value: {{ .Values.Container.Environment.WORDPRESS_DATABASE_PASSWORD }}
+                        
