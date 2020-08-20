@@ -1,7 +1,7 @@
 Port: 80
 Project:
   Name: wordpress
-Replicas: 3
+Replicas: 1
 Container:
   Version: latest
   Environment:
