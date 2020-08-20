@@ -5,8 +5,8 @@ Replicas: 1
 Container:
   Version: latest
   Environment:
-    MARIADB_HOST: 192.168.141.241
-    MARIADB_PORT_NUMBER: 3306
-    WORDPRESS_DATABASE_NAME: wordpress
-    WORDPRESS_DATABASE_USER: admin_user
-    WORDPRESS_DATABASE_PASSWORD: password    
+    MARIADB_HOST: "192.168.141.241"
+    MARIADB_PORT_NUMBER: "3306"
+    WORDPRESS_DATABASE_NAME: "wordpress"
+    WORDPRESS_DATABASE_USER: "admin_user"
+    WORDPRESS_DATABASE_PASSWORD: "password"    
