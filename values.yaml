@@ -1,4 +1,5 @@
 Port: 8080
+Domain_Name: wordpress-test.com
 Project:
   Name: wordpress
 Replicas: 1
@@ -7,6 +8,11 @@ Container:
   Environment:
     MARIADB_HOST: 192.168.141.241
     MARIADB_PORT_NUMBER: 3306
+    MARIADB_ROOT_PASSWORD:
+    MARIADB_ROOT_USER: root
     WORDPRESS_DATABASE_NAME: wordpress
     WORDPRESS_DATABASE_USER: admin_user
     WORDPRESS_DATABASE_PASSWORD: password    
+    WORDPRESS_EMAIL: Your_email@gmail.com
+    WORDPRESS_FIRST_NAME: Your_first_name
+    WORDPRESS_LAST_NAME: Your_last_name
