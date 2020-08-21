@@ -4,39 +4,73 @@ metadata:
   name: {{ .Release.Name }}-deployment
   namespace: {{ .Values.Project.Name }}
 spec:
+  progressDeadlineSeconds: 600
+  replicas: {{ .Values.Replicas }}
+  revisionHistoryLimit: 10
   selector:
     matchLabels:
       web-app: {{ .Values.Project.Name }}
-    replicas: {{ .Values.Replicas }}
-    template:
-      metadata:
-        labels:
-          web-app: {{ .Values.Project.Name }}
-        spec:
-          volumes:
-            - name: config-nginx
-              configMap:
-                name: {{ .Release.Name }}-config
-                items:
-                - key: nginx
-                  path: wordpress-server-block.conf
-          containers:
-          - name: {{ .Values.Project.Name }}
-            image: bitnami/wordpress-nginx:{{ .Values.Container.Version }}
-            ports:
-              - containers: {{ .Values.Port }}
-            volumeMounts:
-              - name: config-nginx
-                mountPath: /opt/bitnami/nginx/conf/server_blocks/wordpress-server-block.conf
-            env:
-            - name: MARIADB_HOST
-              value: {{ .Values.Container.Environment.MARIADB_HOST }}
-            - name: MARIADB_PORT_NUMBER
-              value: {{ .Values.Container.Environment.MARIADB_PORT_NUMBER }}              
-            - name: WORDPRESS_DATABASE_NAME
-              value: {{ .Values.Container.Environment.WORDPRESS_DATABASE_NAME }}
-            - name: WORDPRESS_DATABASE_USER
-              value: {{ .Values.Container.Environment.WORDPRESS_DATABASE_USER }}
-            - name: WORDPRESS_DATABASE_PASSWORD
-              value: {{ .Values.Container.Environment.WORDPRESS_DATABASE_PASSWORD }}
-                        
+  template:
+    metadata:
+      labels:
+        web-app: {{ .Values.Project.Name }}
+    spec:
+      containers:
+      - env:
+        - name: MARIADB_HOST
+          value: {{ .Values.Container.Environment.MARIADB_HOST | quote }}
+        - name: MARIADB_PORT_NUMBER
+          value: {{ .Values.Container.Environment.MARIADB_PORT_NUMBER | quote }}
+        - name: WORDPRESS_DATABASE_NAME
+          value: {{ .Values.Project.Name }}
+        - name: WORDPRESS_DATABASE_PASSWORD
+          value: {{ .Values.Container.Environment.WORDPRESS_DATABASE_PASSWORD }}
+        - name: WORDPRESS_DATABASE_USER
+          value: {{ .Values.Container.Environment.WORDPRESS_DATABASE_USER }}
+        image: bitnami/wordpress-nginx:latest
+        imagePullPolicy: Always
+        name: {{ .Values.Project.Name }}
+        ports:
+        - containerPort: {{ .Values.Port }}
+          name: {{ .Values.Port }}tcp02
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            httpHeaders:
+            - name: Host
+              value: {{ .Release.Name }}
+            path: /
+            port: {{ .Values.Port }}
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 2
+          successThreshold: 2
+          timeoutSeconds: 2
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1000Mi
+          requests:
+            cpu: 250m
+            memory: 500Mi
+        securityContext:
+          capabilities: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /opt/bitnami/nginx/conf/server_blocks/{{ .Values.Project.Name }}-server-block.conf
+          name: config-nginx
+          subPath: {{ .Values.Project.Name }}-server-block.conf
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - configMap:
+          items:
+          - key: nginx
+            path: {{ .Values.Project.Name }}-server-block.conf
+          name: {{ .Release.Name }}-config
+        name: config-nginx
