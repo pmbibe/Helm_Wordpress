@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ splitList "." .Release.Name | join "-" }}-service
+  namespace: {{ .Values.Project.Name }}
+spec:
+  selector:
+    web-app: {{ .Values.Project.Name }}
+  ports:
+  - port: 80
+    targetPort: {{ .Values.Port }}
+    protocol: TCP
+    name: http
